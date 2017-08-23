@@ -28,9 +28,9 @@
 
 <script>
     console.log("Got to the console.log statement")
-    suite('hellopolymer-element', function () {
+    describe('hellopolymer-element', function () {
 
-        test('instantiating the element with default properties works', function () {
+        it('instantiating the element with default properties works', function () {
             var element = fixture('BasicTestFixture');
             assert.equal(element.prop1, 'hellopolymer-element');
             var elementShadowRoot = element.shadowRoot;
@@ -38,7 +38,7 @@
             assert.equal(elementHeader.innerHTML, 'Hello hellopolymer-element!');
         });
 
-        test('setting a property on the element works', function () {
+        it('setting a property on the element works', function () {
             // Create a test fixture
             var element = fixture('ChangedPropertyTestFixture');
             assert.equal(element.prop1, 'new-prop1');
@@ -47,16 +47,43 @@
             assert.equal(elementHeader.innerHTML, 'Hello new-prop1!');
         });
 
-        console.log("Got to test PAct is ", Pact)
 
-        provider = Pact({
-            consumer: 'Friends Client',
-            provider: 'Friends API',
-            spec: '3.0.0' // https://github.com/pact-foundation/pact-specification
+        before(function (done) {
+//            client = example.createClient('http://localhost:1234');
+
+            console.log(Pact);
+            // Create a Mock Server test double of your Provider API. If you need multiple Providers for a scenario, you can create as many as these as you need.
+            provider = Pact({
+                consumer: 'Friends Client',
+                provider: 'Friends API',
+                host: "localhost",
+                port: 9999,
+                spec: '3.0.0' // https://github.com/pact-foundation/pact-specification
+            });
+
+            // required for slower Travis CI environment
+            setTimeout(function () {
+                console.log('beforeAll done');
+                done();
+            }, 2000)
+
+            // Required if run with `singleRun: false. In some cases you might want to clear out the expectations of the Mock Service, call this to clear out
+            // any expectations for the next test run. NOTE: verify() will implicitly call this.
+            provider.removeInteractions();
         });
-        console.log("Got to test provider is ", provider)
+        after(function (done) {
 
-        test('setting a property on the element works', function () {
+            // Record the interactions registered to the Mock Server into the pact file and shuts it down.
+            console.log('afterAll provider.finalize');
+            provider.finalize().then(function () {
+                console.log('afterAll provider.finalize done');
+                done();
+            }, function (err) {
+                console.log('afterAll provider.finalize error: ' + err);
+                done.fail(err);
+            })
+        });
+        it('My first pact test', function (done) {
             console.log('addInteraction-->sayHello');
             // Register an expectation on the Mock Server, which must be called by your test case(s). You can add multiple interactions per
             // server. These will be validated and written to a pact if successful.
@@ -68,16 +95,49 @@
                 },
                 willRespondWith: {
                     status: 200,
-                    headers: {"Content-Type": "application/json"},
-                    body: {reply: "Hello"}
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "*"
+                    },
+                    body: "Hello"
                 }
             }).then(function () {
-                console.log('addInteraction-->sayHello done');
-                done();
+                console.log('addInteraction-->first then done');
+                provider.addInteraction({
+                    uponReceiving: 'an options request for hello',
+                    withRequest: {
+                        method: 'OPTIONS',
+                        path: '/sayHello'
+                    },
+                    willRespondWith: {
+                        status: 200,
+                        headers: {
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Methods": "*"
+                        }
+                    }
+                }).then(function () {
+                    console.log('addInteraction-->second then done');
+
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            assert.equal("Hello", this.responseText)
+                            done();
+                        }
+                    };
+                    xhttp.open("GET", "http://localhost:9999/sayHello", true);
+                    xhttp.send();
+                    console.log('addInteraction-->sayHello after sending');
+                }, function (err) {
+                    console.log('addInteraction-->sayHello error: ' + err);
+                    done.fail(err);
+                })
             }, function (err) {
                 console.log('addInteraction-->sayHello error: ' + err);
                 done.fail(err);
             })
+
 
         });
     });
