@@ -1,0 +1,30 @@
+{
+  "consumer": {
+    "name": "Friends Client"
+  },
+  "provider": {
+    "name": "Friends API"
+  },
+  "interactions": [
+    {
+      "description": "a request for hello",
+      "request": {
+        "method": "GET",
+        "path": "/sayHello"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "*"
+        },
+        "body": "Hello"
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "1.0.0"
+    }
+  }
+}

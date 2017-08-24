@@ -1,0 +1,27 @@
+{
+  "name": "hellopolymer",
+  "version": "1.0.0",
+  "description": "My first experimental element",
+  "main": "StartPactNode.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phil-rice/HelloPolymer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/phil-rice/HelloPolymer/issues"
+  },
+  "homepage": "https://github.com/phil-rice/HelloPolymer#readme",
+  "devDependencies": {
+    "@pact-foundation/pact-node": "^4.12.0",
+    "pact": "^2.7.0",
+    "pact-web": "^2.7.0"
+  }
+}
