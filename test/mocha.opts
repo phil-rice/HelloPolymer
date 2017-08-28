@@ -1,3 +1,0 @@
---require ./node_modules/pact-js-mocha/src/index.js
---require ./test/specHelper.js
---delay

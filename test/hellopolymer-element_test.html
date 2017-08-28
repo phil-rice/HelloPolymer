@@ -71,8 +71,8 @@
             // any expectations for the next test run. NOTE: verify() will implicitly call this.
             provider.removeInteractions();
         });
-        after(function (done) {
 
+        after(function (done) {
             // Record the interactions registered to the Mock Server into the pact file and shuts it down.
             console.log('afterAll provider.finalize');
             provider.finalize().then(function () {
@@ -83,30 +83,24 @@
                 done.fail(err);
             })
         });
+
+        function addOptionCall(provider, url, done) {
+            provider.addInteraction({
+                uponReceiving: 'an options request for hello',
+                withRequest: {method: 'OPTIONS', path: url},
+                willRespondWith: {status: 200}
+            }).then(done)
+        }
+
         it('My first pact test', function (done) {
             console.log('addInteraction-->sayHello');
             // Register an expectation on the Mock Server, which must be called by your test case(s). You can add multiple interactions per
             // server. These will be validated and written to a pact if successful.
-            provider.addInteraction({
-                uponReceiving: 'a request for hello',
-                withRequest: {
-                    method: 'GET',
-                    path: '/sayHello'
-                },
-                willRespondWith: {
-                    status: 200,
-                    headers: {
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods": "*"
-                    },
-                    body: "Hello"
-                }
-            }).then(function () {
-                console.log('addInteraction-->first then done');
+            addOptionCall(provider, '/sayHello', function () {
                 provider.addInteraction({
-                    uponReceiving: 'an options request for hello',
+                    uponReceiving: 'a request for hello',
                     withRequest: {
-                        method: 'OPTIONS',
+                        method: 'GET',
                         path: '/sayHello'
                     },
                     willRespondWith: {
@@ -114,7 +108,8 @@
                         headers: {
                             "Access-Control-Allow-Origin": "*",
                             "Access-Control-Allow-Methods": "*"
-                        }
+                        },
+                        body: "Hello"
                     }
                 }).then(function () {
                     console.log('addInteraction-->second then done');
